@@ -1,43 +1,45 @@
-name: Update Stock Data
+name: Market Radar Update
 
 on:
   schedule:
-    # 每天北京时间 17:00 (UTC 09:00) 运行
+    # 每天北京时间 17:00 (UTC 09:00)
     - cron: '0 9 * * *'
-  workflow_dispatch: # 允许手动点击运行
+  workflow_dispatch: # 允许手动运行
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # 重要：给予写权限，否则无法提交json
+      contents: write # 必须有这个权限
 
     steps:
-    - name: Checkout
+    - name: Checkout Code
       uses: actions/checkout@v3
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: '3.9'
+        cache: 'pip'
 
-    - name: Install dependencies
+    - name: Install Dependencies
       run: pip install -r requirements.txt
 
-    - name: Run Script
+    - name: Run Analysis Script
       run: python daily_task.py
 
-    - name: Commit and Push
+    - name: Commit and Push Data
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
-        # 核心修改：先判断文件是否存在
+        # 检查文件是否存在
         if [ -f market_data_v2.json ]; then
           git add market_data_v2.json
-          git commit -m "Auto-update data" || exit 0
+          # 如果内容没变，git commit 会报错，所以加 || exit 0
+          git commit -m "Auto-update market data" || exit 0
           git push
-          echo "✅ 数据已推送到仓库"
+          echo "✅ 成功: 数据已推送到仓库"
         else
-          echo "⚠️ 警告：未找到 market_data_v2.json，可能是脚本未生成数据。跳过提交。"
+          echo "⚠️ 警告: 脚本未生成 market_data_v2.json，本次不进行提交。"
         fi
