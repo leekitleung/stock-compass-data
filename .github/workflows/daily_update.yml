@@ -2,15 +2,14 @@ name: Market Radar Update
 
 on:
   schedule:
-    # 每天北京时间 17:00 (UTC 09:00)
-    - cron: '0 9 * * *'
-  workflow_dispatch: # 允许手动运行
+    - cron: '0 9 * * *' # 北京时间 17:00
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write # 必须有这个权限
+      contents: write
 
     steps:
     - name: Checkout Code
@@ -33,13 +32,12 @@ jobs:
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
         
-        # 检查文件是否存在
+        # 只要文件存在就提交
         if [ -f market_data_v2.json ]; then
           git add market_data_v2.json
-          # 如果内容没变，git commit 会报错，所以加 || exit 0
           git commit -m "Auto-update market data" || exit 0
           git push
           echo "✅ 成功: 数据已推送到仓库"
         else
-          echo "⚠️ 警告: 脚本未生成 market_data_v2.json，本次不进行提交。"
+          echo "⚠️ 警告: 未找到数据文件。"
         fi
