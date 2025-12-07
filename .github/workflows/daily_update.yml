@@ -31,6 +31,13 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add market_data_v2.json
-        git commit -m "Auto-update data" || exit 0
-        git push
+        
+        # 核心修改：先判断文件是否存在
+        if [ -f market_data_v2.json ]; then
+          git add market_data_v2.json
+          git commit -m "Auto-update data" || exit 0
+          git push
+          echo "✅ 数据已推送到仓库"
+        else
+          echo "⚠️ 警告：未找到 market_data_v2.json，可能是脚本未生成数据。跳过提交。"
+        fi
